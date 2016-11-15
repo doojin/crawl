@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Execute(t *testing.T) {
@@ -13,11 +14,8 @@ func Test_Execute(t *testing.T) {
 	setUpClientTest("google response")
 
 	response := client.Execute(NewGetRequestBuilder("http://google.com"))
-	expectedResponse := "google response"
 
-	if response != expectedResponse {
-		t.Errorf("Expected: %v, Actual: %v", expectedResponse, response)
-	}
+	assert.Equal(t, "google response", response)
 }
 
 func setUpClientTest(mockedResponse string) {
