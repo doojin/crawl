@@ -2,42 +2,37 @@ package queue
 
 import (
 	"testing"
-	"sync"
-	"sort"
 	"github.com/stretchr/testify/assert"
 )
 
-type customJob struct {
+type squareJob struct {
 	i  int
-	wg *sync.WaitGroup
 }
 
-func (cj *customJob) Execute() interface{} {
-	return map[string]interface{}{"result": cj.i * cj.i, "wg": cj.wg}
+func (sj squareJob) Execute() interface{} {
+	return sj.i * sj.i
 }
 
 func Test_JobQueue(t *testing.T) {
-	jobQueue := NewJobQueue(2)
-	jobResults := []int{}
-	wg := new(sync.WaitGroup)
+	jobQueue := NewJobQueue(1)
+	jobQueue.Add(squareJob{0})
+	jobQueue.Add(squareJob{1})
+	jobQueue.Add(squareJob{2})
+	jobQueue.Add(squareJob{3})
+	jobQueue.Add(squareJob{4})
+	jobQueue.Add(squareJob{5})
+	jobQueue.Add(squareJob{6})
+	jobQueue.Add(squareJob{7})
+	jobQueue.Add(squareJob{8})
+	jobQueue.Add(squareJob{9})
 
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		jobQueue.Add(&customJob{i, wg})
-	}
+	assert.Equal(t, 10, len(jobQueue.jobs))
 
-	go func() {
-		for jobResult := range jobQueue.Results() {
-			jobResults = append(jobResults, jobResult.(map[string]interface{})["result"].(int))
-			wg.Done()
-		}
-	}()
+	jobResults := jobQueue.Execute()
 
-	wg.Wait()
-
+	assert.Equal(t, 0, len(jobQueue.jobs))
 	assert.Equal(t, 10, len(jobResults))
 
-	sort.Ints(jobResults)
 	assert.Equal(t,  0, jobResults[0])
 	assert.Equal(t,  1, jobResults[1])
 	assert.Equal(t,  4, jobResults[2])
